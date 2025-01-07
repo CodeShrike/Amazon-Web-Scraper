@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <a href="/" class="btn btn-secondary">Back to Search</a>
+    </div>
+    <div class="text-center flex-grow-1">
+        <h1>CSV Viewer</h1>
+    </div>
+    <div>
+        <a href="/update_csv" target="_blank" class="btn btn-primary ms-2">Download CSV</a>
+        <a href="/download_csv" target="_blank" class="btn btn-success ms-2">Download CSV</a>
+        <a href="/price_trend_chart" target="_blank" class="btn btn-warning ms-2">Visualize Price Trends</a>
+    </div>
+</div>{% endblock %}
+
+{% block title %}
+    CSV File Contents
+{% endblock %}
+
+{% block content %}
+    <h2>CSV File Contents</h2>
+    <div class="table-responsive">
+        <style>
+            table th, table td {
+                text-align: left;
+            }
+        </style>
+        {{ table_html | safe }}
+    </div>
+    <a href="/download_csv" class="btn btn-primary mt-3">Download CSV File</a>
+
+{% endblock %}

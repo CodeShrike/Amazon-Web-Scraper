@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block page_header %}
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <a href="/" class="btn btn-secondary">Back to Search</a>
+    </div>
+    <div class="text-center flex-grow-1">
+        <h1>Price Trend Chart</h1>
+    </div>
+    <div>
+        <a href="/update_csv" target="_blank" class="btn btn-primary ms-2">Download CSV</a>
+        <a href="/view_csv" target="_blank" class="btn btn-info ms-2">View CSV</a>
+        <a href="/download_csv" target="_blank" class="btn btn-success ms-2">Download CSV</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block title %}
+    Price Trend Chart
+{% endblock %}
+
+{% block content %}
+    <h2>Price Trends Over Different Dates</h2>
+    <div>
+        {{ plot_html | safe }}
+    </div>
+{% endblock %}
