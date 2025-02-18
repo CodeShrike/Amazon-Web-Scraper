@@ -24,7 +24,7 @@ This project is a Flask-based web application that allows users to search for pr
 ### Installation
 
 #### Prerequisites
-- Python 3.7 or higher  
+- Python 3.9 or higher  
 - Pip (Python package manager)  
 
 #### Steps
@@ -47,3 +47,9 @@ This project is a Flask-based web application that allows users to search for pr
 
 - The **Download** feature will overwrite the current CSV file, while the **Update** feature will append new data to retain previously written records.  
 - For the data visualization function to work correctly, multiple days of product data should be recorded. A dummy CSV file with two dates is provided for testing purposes.  
+
+### TBD
+
+- Update README for Docker instructions
+- Add sanitisation to queries
+- Replace global list with a database
