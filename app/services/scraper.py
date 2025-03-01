@@ -70,5 +70,6 @@ def landing_search(query, product_manager):
             continue
 
         product_manager.add_product(timestamp, combined_title, price, image, rating, rating_count, link)
+        print(combined_title) #ERASE THIS
 
     return product_manager.get_all_products()
