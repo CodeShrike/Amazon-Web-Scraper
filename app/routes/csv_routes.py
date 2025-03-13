@@ -9,7 +9,7 @@ from . import CSV_FILE_PATH
 csv_bp = Blueprint("csv", __name__)
 
 # Route appends current refreshed products to existing CSV file if it exists
-@csv_bp.route("/update_csv", methods=["POST"])
+@csv_bp.route("/update_csv", methods=["GET", "POST"])
 def update_csv():
     products = product_manager.get_all_products()
     df = produce_df(products)

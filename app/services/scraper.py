@@ -44,32 +44,33 @@ def landing_search(query, product_manager):
     selectors = get_selectors(soup)
 
     for product in selectors:
-        title_element = product.find("h2")
-        if not title_element:
-            continue
+        try:
+            title_element = product.find("h2")
+            if not title_element:
+                continue
 
-        price_element = product.select_one(".a-price-whole,.a-offscreen")
-        image_element = product.select_one(".s-image")
-        rating_element = product.select_one(".a-icon-alt")
-        rating_num_element = product.select_one("a .a-size-base.s-underline-text")
-        link_element = product.select_one(".a-link-normal")
-        title_extra_element = product.select_one("h2.a-size-base-plus.a-spacing-none.a-color-base.a-text-normal")
+            price_element = product.select_one(".a-price-whole,.a-offscreen")
+            image_element = product.select_one(".s-image")
+            rating_element = product.select_one(".a-icon-alt")
+            rating_num_element = product.select_one("a .a-size-base.s-underline-text")
+            link_element = product.select_one(".a-link-normal")
+            title_extra_element = product.select_one("h2.a-size-base-plus.a-spacing-none.a-color-base.a-text-normal")
 
-        title_extra = title_extra_element.text.strip() if title_extra_element else ""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        title = title_element.text.strip()
-        combined_title = f"{title} {title_extra}" if title_extra and title_extra != title else title
-        price = price_element.text.strip() if price_element else None
-        image = image_element.attrs.get("src") if image_element else None
-        rating = rating_element.text.strip() if rating_element else None
-        rating_count = (
-    int(rating_num_element.text.replace(",", "").strip()) if rating_num_element and rating_num_element.text.replace(",", "").strip().isdigit() else None 
-)
-        link = f"https://www.amazon.co.uk{link_element['href']}" if link_element else None
-        if not rating or not image or not price or not rating_count or not link:
-            continue
-
-        product_manager.add_product(timestamp, combined_title, price, image, rating, rating_count, link)
-        print(combined_title) #ERASE THIS
+            title_extra = title_extra_element.text.strip() if title_extra_element else ""
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            title = title_element.text.strip()
+            combined_title = f"{title} {title_extra}" if title_extra and title_extra != title else title
+            price = price_element.text.strip() if price_element else None
+            image = image_element.attrs.get("src") if image_element else None
+            rating = float(rating_element.text.strip().split(" ")[0]) if rating_element else None
+            rating_count = (
+           int(rating_num_element.text.replace(",", "").strip()) if rating_num_element and rating_num_element.text.replace(",", "").strip().isdigit() else None 
+    )
+            link = f"https://www.amazon.co.uk{link_element['href']}" if link_element else None
+            if not rating or not image or not price or not rating_count or not link:
+                continue
+            product_manager.add_product(timestamp, combined_title, price, image, rating, rating_count, link)
+        except Exception as e:
+            print(f"Error in processing: {e}")
 
     return product_manager.get_all_products()
