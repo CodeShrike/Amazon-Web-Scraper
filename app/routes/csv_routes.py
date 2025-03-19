@@ -13,6 +13,8 @@ csv_bp = Blueprint("csv", __name__)
 def update_csv():
     products = product_manager.get_all_products()
     df = produce_df(products)
+    insert_order = ["timestamp", "title", "price", "image", "rating", "rating_count", "link"]
+    df = df[insert_order]
 
     if os.path.isfile(CSV_FILE_PATH):
         df.to_csv(CSV_FILE_PATH, mode="a", header=False, index=False)

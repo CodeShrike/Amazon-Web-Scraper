@@ -17,12 +17,14 @@ class ProductManager:
             "rating_count": rating_count,
             "link": link,
         }
-        self.collection.insert_one(product)
+        # Prevent duplicates by using title as primary key and updating to newest listing
+        product["_id"] = title
+        self.collection.update_one({"_id": product["_id"]}, {"$set": product}, upsert= True)
 
     # Retrieve all products currently stored
     def get_all_products(self):
         #return mongo collection of products, removing the _id column
-        return list(self.collection.find({}, {"_id":0}))
+        return list(self.collection.find({}, {"_id":0}).sort({"timestamp": 1}))
     
     # Function to sort the products by attribute in either ascending or descending order
     def sort_products(self, attribute, order="asc"):

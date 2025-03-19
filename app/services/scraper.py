@@ -2,6 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import random
 from datetime import datetime
+import concurrent.futures
+import time
+import asyncio
+import aiohttp
 
 # User agents to cycle through in the header in order to successfully get through to Amazons domain with our requests
 USER_AGENTS = [
@@ -20,11 +24,33 @@ HEADERS = {
     'Referer': 'https://www.google.com/'
 }
 
-# Send a GET request to Amazon utilising the headers to mimic browser requests, if an error occurs flag it, then return the response as a BeautifulSoup object to be parsed
-def url_setter(url):
-    response = requests.get(url, headers=HEADERS)
-    response.raise_for_status()  
-    return BeautifulSoup(response.text, "lxml")
+# Asynchronously send a GET request to Amazon utilising the headers to mimic browser requests, if an error occurs flag it, then return the response as a BeautifulSoup object to be parsed    
+async def async_url_setter(url, session):
+    try:
+        async with session.get(url, timeout=5) as response:
+            response.raise_for_status()
+            text = await response.text()
+            return BeautifulSoup(text, "lxml")
+    except Exception as e:
+        print(f"Error fetching {url}: {e}")
+        return None
+
+# Find upper boundary of pages for product by selecting pagination elements except for "Next" button, return the last page element found
+def get_pages(soup):
+    pages = soup.select("a.s-pagination-item:not(.s-pagination-next), span.s-pagination-item:not(.s-pagination-next)")
+    if not pages:
+        print("Error in pagination: No pages found. Returning 0")
+        return 0
+    try:
+        max_pages = pages[-1]
+    except Exception as e:
+        print(f"Error in pagination: {e}. Returning 0")
+        return 0
+    try:
+        return int(max_pages.get_text(strip=True))
+    except Exception as e:
+        print(f"Error converting page text to int: {e}. Returning 0")
+        return 0
 
 # Determine the selectors we need to go through by which has the higher count - Noticed this has helped to let the program go through media requests which were otherwise being dropped
 def get_selectors(soup):
@@ -36,19 +62,12 @@ def get_selectors(soup):
         selectors = soup.select('div[role="listitem"]')
     return selectors
 
-
-# Cursory search over the landing page to extract quick details; we set the attributes depending on the appropriate selectors and then ensure we aren't pulling malformed data, skipping it if we do
-def landing_search(query, product_manager):
-    url = f"https://www.amazon.co.uk/s?k={query.replace(' ', '+')}"
-    soup = url_setter(url)
-    selectors = get_selectors(soup)
-
-    for product in selectors:
+# Process product by selecting appropriate CSS selectors and formatting them into appropriate elements
+def process_product(product):
         try:
             title_element = product.find("h2")
             if not title_element:
-                continue
-
+                return None
             price_element = product.select_one(".a-price-whole,.a-offscreen")
             image_element = product.select_one(".s-image")
             rating_element = product.select_one(".a-icon-alt")
@@ -63,14 +82,45 @@ def landing_search(query, product_manager):
             price = price_element.text.strip() if price_element else None
             image = image_element.attrs.get("src") if image_element else None
             rating = float(rating_element.text.strip().split(" ")[0]) if rating_element else None
-            rating_count = (
-           int(rating_num_element.text.replace(",", "").strip()) if rating_num_element and rating_num_element.text.replace(",", "").strip().isdigit() else None 
-    )
+            rating_count = (int(rating_num_element.text.replace(",", "").strip()) if rating_num_element and rating_num_element.text.replace(",", "").strip().isdigit() else None)
             link = f"https://www.amazon.co.uk{link_element['href']}" if link_element else None
             if not rating or not image or not price or not rating_count or not link:
-                continue
-            product_manager.add_product(timestamp, combined_title, price, image, rating, rating_count, link)
+                return None
+            return timestamp, combined_title, price, image, rating, rating_count, link
         except Exception as e:
             print(f"Error in processing: {e}")
 
+# Cursory search over the landing page to extract quick details; we set the attributes depending on the appropriate selectors and then ensure we aren't pulling malformed data, skipping it if we do
+async def landing_search(query, product_manager):
+    formatted_query = query.replace(' ', '+')
+    base_url = f"http://www.amazon.co.uk/s?k={formatted_query}"
+    
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
+        main_soup = await async_url_setter(base_url, session)
+        if not main_soup:
+            return product_manager.get_all_products()
+        
+        max_pages = get_pages(main_soup)
+        print(f"Max pages found: {max_pages}")
+        
+        urls = [f"{base_url}&page={pg}" for pg in range(1, max_pages + 1)]
+        tasks = [async_url_setter(url, session) for url in urls]
+        soups = await asyncio.gather(*tasks)
+    
+    selectors = []
+    for soup in soups:
+        if soup:
+            try:
+                selectors.extend(get_selectors(soup))
+            except Exception as e:
+                print(f"Error processing selectors: {e}")
+    
+    loop = asyncio.get_event_loop()
+    tasks = [loop.run_in_executor(None, process_product, selector) for selector in selectors]
+    results = await asyncio.gather(*tasks)
+    
+    for result in results:
+        if result:
+            product_manager.add_product(*result)
+    
     return product_manager.get_all_products()
