@@ -1,8 +1,9 @@
 from pymongo import MongoClient
+import os
 
 class Database:
-    def __init__(self, uri="mongodb://localhost:27017/", db_name="scraped_db"):
-        self.uri = uri
+    def __init__(self, uri=None, db_name="scraped_db"):
+        self.uri = uri or os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
         self.db_name = db_name
         self.client = MongoClient(self.uri)
         self.db = self.client[self.db_name]

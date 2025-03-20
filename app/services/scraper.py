@@ -79,7 +79,7 @@ def process_product(product):
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             title = title_element.text.strip()
             combined_title = f"{title} {title_extra}" if title_extra and title_extra != title else title
-            price = price_element.text.strip() if price_element else None
+            price = float(price_element.text.strip().replace("£", "")) if price_element else None
             image = image_element.attrs.get("src") if image_element else None
             rating = float(rating_element.text.strip().split(" ")[0]) if rating_element else None
             rating_count = (int(rating_num_element.text.replace(",", "").strip()) if rating_num_element and rating_num_element.text.replace(",", "").strip().isdigit() else None)
