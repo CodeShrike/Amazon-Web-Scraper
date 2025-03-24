@@ -10,15 +10,17 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Mobile Safari/537.36",
 ]
 
 # Headers for the HTML requests to Amazon
 HEADERS = {
     'User-Agent': random.choice(USER_AGENTS),
-    'Accept-Language': 'da, en-gb, en',
+    'Accept-Language': random.choice(['en-US,en;q=0.9', 'da,en-gb;q=0.8,en;q=0.7']),
     'Accept-Encoding': 'gzip, deflate, br',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Referer': 'https://www.google.com/'
+    'Referer': 'https://www.amazon.com/'
 }
 
 # Asynchronously send a GET request to Amazon utilising the headers to mimic browser requests, if an error occurs flag it, then return the response as a BeautifulSoup object to be parsed    
