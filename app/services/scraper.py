@@ -1,9 +1,6 @@
-import requests
 from bs4 import BeautifulSoup
 import random
 from datetime import datetime
-import concurrent.futures
-import time
 import asyncio
 import aiohttp
 
@@ -100,9 +97,7 @@ async def landing_search(query, product_manager):
         if not main_soup:
             return product_manager.get_all_products()
         
-        max_pages = get_pages(main_soup)
-        print(f"Max pages found: {max_pages}")
-        
+        max_pages = get_pages(main_soup)        
         urls = [f"{base_url}&page={pg}" for pg in range(1, max_pages + 1)]
         tasks = [async_url_setter(url, session) for url in urls]
         soups = await asyncio.gather(*tasks)

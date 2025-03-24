@@ -15,7 +15,7 @@ def home():
 @main_bp.route("/search")
 def search():
     query = request.args.get("query")
-    product_manager.clear_products() #Why do I have this? Check
+    product_manager.clear_products() 
 
     if not query:
         return {"error": "Query parameter is required"}, 400
